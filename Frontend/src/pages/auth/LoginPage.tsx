@@ -22,6 +22,7 @@ import AppleIcon from "@mui/icons-material/Apple";
 import { Link as RouterLink } from "react-router-dom";
 import { keycloakLogin } from "../../features/auth/authSlice";  
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import loginBackground from "../../assets/images/Backgroun_img_login.png";
 
 const LoginPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -76,7 +77,10 @@ const LoginPage: React.FC = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #e3f2fd, #fce4ec)",
+        backgroundImage: `url(${loginBackground})`,
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
       }}
     >
       <Paper elevation={3} sx={{ p: 4, width: 380, borderRadius: 3 }}>
