@@ -1,220 +1,214 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  Button,
-  Typography,
-  Paper,
-  Divider,
-  IconButton,
-  TextField,
-  InputAdornment,
-  Link,
-} from "@mui/material";
-import EmailIcon from "@mui/icons-material/Email";
-import LockIcon from "@mui/icons-material/Lock";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import GoogleIcon from "@mui/icons-material/Google";
-import FacebookIcon from "@mui/icons-material/Facebook";
-import AppleIcon from "@mui/icons-material/Apple";
-
-import { Link as RouterLink } from "react-router-dom";
-import { keycloakLogin } from "../../features/auth/authSlice";  
+import { useEffect, useState, type FormEvent } from "react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { keycloakLogin } from "../../features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import loginBackground from "../../assets/images/Backgroun_img_login.png";
+import "./AuthPage.css";
 
-const LoginPage: React.FC = () => {
+const LoginPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { loading, error, accessToken } = useAppSelector((state) => state.auth);
 
-  const { loading, error, accessToken } = useAppSelector(
-    (state) => state.auth
-  );
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [emailError, setEmailError] = useState<string>("");
-  const [passwordError, setPasswordError] = useState<string>("");
+  useEffect(() => {
+    document.title = "YNR Aquatics | Log in";
+  }, []);
 
-  // redirect after login
   useEffect(() => {
     if (accessToken) {
-      navigate("/dashboard"); // change to your dashboard route
+      navigate("/dashboard");
     }
   }, [accessToken, navigate]);
 
-  // login button click
-  const login = (): void => {
-    // validation
-    let hasError = false;
-    if (!email) {
-      setEmailError("Username required");
-      hasError = true;
-    } else setEmailError("");
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    if (!password) {
-      setPasswordError("Password required");
-      hasError = true;
-    } else setPasswordError("");
+    const nextUsernameError = username.trim() ? "" : "Username is required.";
+    const nextPasswordError = password ? "" : "Password is required.";
 
-    if (hasError) return;
+    setUsernameError(nextUsernameError);
+    setPasswordError(nextPasswordError);
 
-    // dispatch Redux thunk
-    dispatch(keycloakLogin({ username: email, password }));
-  };
+    if (nextUsernameError || nextPasswordError || loading) {
+      return;
+    }
 
-  const forgotPassword = (): void => {
-    window.location.href =
-      "http://keycloak-url/realms/your-realm/account"; // Keycloak forgot password
+    dispatch(keycloakLogin({ username: username.trim(), password }));
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundImage: `url(${loginBackground})`,
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
+    <main
+      className="registration-page"
+      style={{
+        backgroundImage:
+          `linear-gradient(115deg, rgba(3, 28, 47, .9), rgba(5, 67, 83, .62)), url("${loginBackground}")`,
       }}
     >
-      <Paper elevation={3} sx={{ p: 4, width: 380, borderRadius: 3 }}>
-        <Typography variant="h5" textAlign="center" mb={1}>
-          Login
-        </Typography>
+      <div className="registration-shell">
+        <section className="registration-intro" aria-labelledby="brand-title">
+          <a className="brand-lockup" href="/" aria-label="YNR Aquatics home">
+            <span className="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none">
+                <path
+                  d="M7 28c5 0 5-5 10-5s5 5 10 5 5-5 10-5 5 5 10 5M7 37c5 0 5-5 10-5s5 5 10 5 5-5 10-5 5 5 10 5"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M24 5c-5.2 6.1-8 10.4-8 14a8 8 0 0 0 16 0c0-3.6-2.8-7.9-8-14Z"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <span className="brand-name">
+              YNR <span>AQUATICS</span>
+            </span>
+          </a>
 
-        {/* Username */}
-        <TextField
-          fullWidth
-          placeholder="User Name"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          error={!!emailError}
-          helperText={emailError}
-          sx={{ mb: 2 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <EmailIcon color="action" />
-              </InputAdornment>
-            ),
-          }}
-        />
+          <div className="intro-copy">
+            <p className="eyebrow">GOOD TO HAVE YOU BACK</p>
+            <h1 id="brand-title">
+              Your next
+              <br />
+              <span>adventure awaits.</span>
+            </h1>
+            <p className="intro-description">
+              Sign in to pick up where the water takes you.
+            </p>
+          </div>
 
-        {/* Password */}
-        <TextField
-          fullWidth
-          placeholder="Password"
-          type={showPassword ? "text" : "password"}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          error={!!passwordError}
-          helperText={passwordError}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <LockIcon color="action" />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
-                  edge="end"
+          <p className="intro-note">
+            <span aria-hidden="true" />
+            A deeper connection to the water.
+          </p>
+        </section>
+
+        <section className="registration-card" aria-labelledby="form-title">
+          <div className="card-heading">
+            <p className="card-eyebrow">WELCOME BACK</p>
+            <h2 id="form-title">Log in to your account</h2>
+            <p>Enter your details to continue.</p>
+          </div>
+
+          <form
+            className="registration-form"
+            onSubmit={handleSubmit}
+            noValidate
+          >
+            <div className="field-group">
+              <label htmlFor="login-username">Username</label>
+              <input
+                id="login-username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(event) => {
+                  setUsername(event.target.value);
+                  setUsernameError("");
+                }}
+                aria-invalid={Boolean(usernameError)}
+                aria-describedby={
+                  usernameError ? "login-username-error" : undefined
+                }
+              />
+              {usernameError && (
+                <p
+                  className="field-message field-error"
+                  id="login-username-error"
                 >
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+                  {usernameError}
+                </p>
+              )}
+            </div>
 
-        {/* Forgot password */}
-        <Box sx={{ textAlign: "right", mt: 1, mb: 2 }}>
-          <Link
-            component="button"
-            variant="body2"
-            onClick={forgotPassword}
-            sx={{
-              color: "black",
-              textDecoration: "none",
-              "&:hover": {
-                textDecoration: "underline",
-              },
-            }}
-          >
-            Forgot password?
-          </Link>
-        </Box>
+            <div className="field-group">
+              <label htmlFor="login-password">Password</label>
+              <div className="password-control">
+                <input
+                  id="login-password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    setPasswordError("");
+                  }}
+                  aria-invalid={Boolean(passwordError)}
+                  aria-describedby={
+                    passwordError ? "login-password-error" : undefined
+                  }
+                />
+                <button
+                  className="password-toggle"
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                  onClick={() => setShowPassword((visible) => !visible)}
+                >
+                  {showPassword ? (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                      <path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c5.5 0 9 7 9 7a15 15 0 0 1-3.1 3.8M6.2 6.2C4.1 7.6 3 10 3 12c0 0 3.5 7 9 7a9.8 9.8 0 0 0 4.1-.9" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M3 12s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7Z" />
+                      <circle cx="12" cy="12" r="2.5" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {passwordError && (
+                <p
+                  className="field-message field-error"
+                  id="login-password-error"
+                >
+                  {passwordError}
+                </p>
+              )}
+            </div>
 
-        {/* Redux error */}
-        {error && (
-          <Typography variant="body2" color="error" mb={2}>
-            {error}
-          </Typography>
-        )}
+            {error && (
+              <p className="submission-message" role="alert">
+                {error}
+              </p>
+            )}
 
-        {/* Login button */}
-        <Button
-          variant="contained"
-          fullWidth
-          sx={{ borderRadius: 3, py: 1.2, mb: 3 }}
-          onClick={login}
-          disabled={loading}
-        >
-          {loading ? "Logging in..." : "Get Started"}
-        </Button>
-
-        {/* Signup link */}
-        <Box sx={{ textAlign: "center", mb: 2 }}>
-          <Typography variant="body2">
-            Don’t have an account?{" "}
-            <Link
-              component={RouterLink}
-              to="/signup"
-              sx={{
-                fontWeight: 600,
-                textDecoration: "none",
-                color: "primary.main",
-              }}
+            <button
+              className="register-button"
+              type="submit"
+              disabled={loading}
             >
-              Sign up
-            </Link>
-          </Typography>
-        </Box>
+              <span>{loading ? "Logging in..." : "Log in"}</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
 
-        <Divider sx={{ mb: 2 }}>Or sign in with</Divider>
+          <p className="login-prompt">
+            Don’t have an account? <RouterLink to="/signup">Register</RouterLink>
+          </p>
 
-        {/* Social icons */}
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-          <IconButton
-            onClick={login}
-            sx={{ border: "1px solid #e0e0e0", borderRadius: 2 }}
-          >
-            <GoogleIcon />
-          </IconButton>
-
-          <IconButton
-            onClick={login}
-            sx={{ border: "1px solid #e0e0e0", borderRadius: 2 }}
-          >
-            <FacebookIcon />
-          </IconButton>
-
-          <IconButton
-            onClick={login}
-            sx={{ border: "1px solid #e0e0e0", borderRadius: 2 }}
-          >
-            <AppleIcon />
-          </IconButton>
-        </Box>
-      </Paper>
-    </Box>
+          <div className="card-footer">
+            <span aria-hidden="true" />
+            <span>BUILT FOR LIFE IN THE WATER</span>
+            <span aria-hidden="true" />
+          </div>
+        </section>
+      </div>
+    </main>
   );
 };
 
